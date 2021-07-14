@@ -30,10 +30,7 @@ public class JdbcUtill {
 		System.out.println(connection.isClosed());
 	}
 
-	public void showTable() throws SQLException {
-		DatabaseMetaData metaData = connection.getMetaData();
-
-		ResultSet tables = metaData.getTables(null, null, "%", new String[] { "TABLE" });
+	private void printResultSet(ResultSet tables) throws SQLException {
 		while (tables.next()) {
 			// 列的个数
 			int columnCount = tables.getMetaData().getColumnCount();
@@ -46,11 +43,59 @@ public class JdbcUtill {
 			System.out.println(colNamesList);
 
 			for (String cKey : colNamesList) {
-				
-				System.out.println(cKey+"\t\t"+tables.getString(cKey));
-			}
-			System.out.println("---------------------");
-		}
 
+				System.out.println(cKey + "\t\t" + tables.getString(cKey));
+			}
+			System.out.println("--------------------------------------------------------");
+		}
 	}
+
+	/**
+	 * 获取全部表信息
+	 * 
+	 * @throws SQLException
+	 */
+	public void showTable() throws SQLException {
+		DatabaseMetaData metaData = connection.getMetaData();
+
+		ResultSet tables = metaData.getTables(null, null, "%", new String[] { "TABLE" });
+		printResultSet(tables);
+	}
+
+	/***
+	 * 获取表全部字段信息
+	 * 
+	 * @param tableName
+	 * @throws SQLException
+	 */
+	public void showColum(String tableName) throws SQLException {
+		DatabaseMetaData metaData = connection.getMetaData();
+
+		ResultSet colRet = metaData.getColumns(null, "%", tableName, "%");
+
+		printResultSet(colRet);
+	}
+	/***
+	 * 获取表主键
+	 * @param tableName
+	 * @throws SQLException
+	 */
+	public void getPrimaryKeysForTable(String tableName) throws SQLException {
+		DatabaseMetaData metaData = connection.getMetaData();
+		ResultSet primaryKeyResultSet = metaData.getPrimaryKeys(null, null, tableName);
+
+		printResultSet(primaryKeyResultSet);
+	}
+	/***
+	 * 获取表外键
+	 * @param tableName
+	 * @throws SQLException
+	 */
+	public void getImportedKeysForTable(String tableName) throws SQLException {
+		DatabaseMetaData metaData = connection.getMetaData();
+		ResultSet primaryKeyResultSet = metaData.getImportedKeys(null, null, tableName);
+
+		printResultSet(primaryKeyResultSet);
+	}
+	
 }
