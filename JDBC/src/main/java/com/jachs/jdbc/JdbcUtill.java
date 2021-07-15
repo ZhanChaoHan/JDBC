@@ -1,13 +1,14 @@
 package com.jachs.jdbc;
 
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 /***
@@ -15,10 +16,10 @@ import java.util.Properties;
  * @author zhanchaohan
  *
  */
-public class JdbcUtill {
+public class JdbcUtill implements JdbcBehaviour {
 	private Connection connection;
 
-	public void init() throws SQLException, IOException, ClassNotFoundException {
+	public void init() throws Exception {
 		Properties properties = new Properties();
 		properties.load(JdbcUtill.class.getResourceAsStream("/connection.properties"));
 
@@ -30,24 +31,27 @@ public class JdbcUtill {
 		System.out.println(connection.isClosed());
 	}
 
-	private void printResultSet(ResultSet tables) throws SQLException {
+	private Map<String, String> printResultSet(ResultSet tables) throws SQLException {
+		Map<String, String> map = new HashMap<String, String>();
+
 		while (tables.next()) {
 			// 列的个数
 			int columnCount = tables.getMetaData().getColumnCount();
-
+			// set key list
 			List<String> colNamesList = new ArrayList<String>();
 			for (int i = 1; i <= columnCount; i++) { // 获取列名称
 				String columnName = tables.getMetaData().getColumnName(i);
 				colNamesList.add(columnName);
 			}
 			System.out.println(colNamesList);
-
+			// print key and values
 			for (String cKey : colNamesList) {
-
 				System.out.println(cKey + "\t\t" + tables.getString(cKey));
+				map.put(cKey, tables.getString(cKey));
 			}
 			System.out.println("--------------------------------------------------------");
 		}
+		return map;
 	}
 
 	/**
@@ -55,7 +59,7 @@ public class JdbcUtill {
 	 * 
 	 * @throws SQLException
 	 */
-	public void showTable() throws SQLException {
+	public void showTable() throws Exception {
 		DatabaseMetaData metaData = connection.getMetaData();
 
 		ResultSet tables = metaData.getTables(null, null, "%", new String[] { "TABLE" });
@@ -75,8 +79,10 @@ public class JdbcUtill {
 
 		printResultSet(colRet);
 	}
+
 	/***
 	 * 获取表主键
+	 * 
 	 * @param tableName
 	 * @throws SQLException
 	 */
@@ -86,8 +92,10 @@ public class JdbcUtill {
 
 		printResultSet(primaryKeyResultSet);
 	}
+
 	/***
 	 * 获取表外键
+	 * 
 	 * @param tableName
 	 * @throws SQLException
 	 */
@@ -97,5 +105,5 @@ public class JdbcUtill {
 
 		printResultSet(primaryKeyResultSet);
 	}
-	
+
 }
